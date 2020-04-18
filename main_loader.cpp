@@ -26,7 +26,7 @@ public:
                          unsigned long) {
         dump();
         // AllocConsole();
-        // freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stdout);
         exit(0);
     }
     EXPORT MiniDmpSender(MiniDmpSender const &) {}

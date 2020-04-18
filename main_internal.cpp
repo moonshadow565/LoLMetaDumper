@@ -60,33 +60,40 @@ static void KillLeague() noexcept {
 }
 
 static void dump() noexcept {
-    m_base = reinterpret_cast<uintptr_t>(GetModuleHandleA("League of Legends.exe"));
-    m_size = 80 * 1024 * 1024;
+    try {
+        std::cout << "[MetaDumper] Started " << std::endl;
+        m_base = reinterpret_cast<uintptr_t>(GetModuleHandleA("League of Legends.exe"));
+        m_size = 80 * 1024 * 1024;
 
-    if (m_base == 0) {
-        return;
+        std::cout << "[MetaDumper] Base " << (void*)m_base << std::endl;
+        if (m_base == 0) {
+            return;
+        }
+
+        auto const pid = GetCurrentProcessId();
+        std::cout << "[MetaDumper] Pid " << pid << std::endl;
+        if (!OpenLeague(pid)) {
+            return;
+        }
+
+        auto const data = Mem::Dump();
+        auto const version = Version::Dump(data);
+        std::cout << "[MetaDumper] Version " << version << std::endl;
+
+        if (version.empty()) {
+            KillLeague();
+        }
+
+        std::filesystem::create_directory("meta");
+        auto const meta = Meta::Dump(data, version);
+        if (std::ofstream out("meta/meta_" + version + ".json"); out) {
+            out << meta.dump(2);
+            out.flush();
+        }
+        std::cout << "[MetaDumper] Done" << std::endl;
+    } catch (std::exception const& e) {
+        std::cout << "[MetaDumper] Error " << e.what() << std::endl;
     }
-
-    auto const pid = GetCurrentProcessId();
-
-    if (!OpenLeague(pid)) {
-        return;
-    }
-
-    auto const data = Mem::Dump();
-    auto const version = Version::Dump(data);
-
-    if (version.empty()) {
-        KillLeague();
-    }
-
-    std::filesystem::create_directory("meta");
-    auto const meta = Meta::Dump(data, version);
-    if (std::ofstream out("meta/meta_" + version + ".json"); out) {
-        out << meta.dump(2);
-        out.flush();
-    }
-
     KillLeague();
 }
 

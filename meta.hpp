@@ -24,33 +24,7 @@ namespace Meta {
     template<size_t SIZE>
     using Vtable = std::array<Mem::Ptr<std::array<uint8_t, 8>>, SIZE>;
 
-    enum class PropertyType : uint8_t {
-        none = 0,
-        boolean = 1,
-        int8 = 2,
-        uint8 = 3,
-        int16 = 4,
-        uint16 = 5,
-        int32 = 6,
-        uint32 = 7,
-        int64 = 8,
-        uint64 = 9,
-        float32 = 10,
-        point2D = 11,
-        point3D = 12,
-        point4D = 13,
-        matrix44 = 14,
-        color = 15,
-        string = 16,
-        hash = 17,            // this magically transforms in weak_link when in container
-        container = 18,       // has containerI, can have otherClass for elements
-        struct_ptr = 19,      // has otherClass, is stored like unique_ptr in parrent
-        struct_value = 20,    // has otherClass, is stored like value in parrent
-        link_offset = 21,     // has otherClass, seems to be raw ptr to a global
-        optional = 22,        // has containerI
-        map = 23,             // has mapI, can have otherClass for elements
-        bitbool = 24,
-    };
+    enum class PropertyType : uint8_t {};
 
     template<Patch V>
     struct ContainerI {
@@ -205,6 +179,7 @@ namespace Meta {
         bool isInterface;
         static inline constexpr bool isValue = {};
         static inline constexpr bool isSecondaryBase = {};
+        static inline constexpr bool isUnk5 = {};
         Mem::StdVector<Property<V>> properties;
         static inline constexpr Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryBases = {};
         static inline constexpr Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryChildren = {};
@@ -227,6 +202,7 @@ namespace Meta {
         bool isInterface;
         static inline constexpr bool isValue = {};
         static inline constexpr bool isSecondaryBase = {};
+        static inline constexpr bool isUnk5 = {};
         Mem::StdVector<Property<V>> properties;
         static inline constexpr Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryBases = {};
         static inline constexpr Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryChildren = {};
@@ -249,6 +225,7 @@ namespace Meta {
         bool isInterface;
         bool isValue;
         static inline constexpr bool isSecondaryBase = {};
+        static inline constexpr bool isUnk5 = {};
         Mem::StdVector<Property<V>> properties;
         static inline constexpr Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryBases = {};
         static inline constexpr Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryChildren = {};
@@ -271,6 +248,7 @@ namespace Meta {
         bool isInterface;
         bool isValue;
         bool isSecondaryBase;
+        static inline constexpr bool isUnk5 = {};
         Mem::StdVector<Property<V>> properties;
         Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryBases;
         Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryChildren;
@@ -293,6 +271,30 @@ namespace Meta {
         bool isInterface;
         bool isValue;
         bool isSecondaryBase;
+        static inline constexpr bool isUnk5 = {};
+        Mem::StdVector<Property<V>> properties;
+        Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryBases;
+        Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryChildren;
+    };
+
+    template<>
+    struct Class<Patch::V10_11> {
+        static inline constexpr Patch V = Patch::V7_15;
+        uintptr_t upcastSecondary = {};
+        uint32_t hash;
+        uintptr_t constructor;
+        uintptr_t destructor;
+        uintptr_t inplaceconstructor;
+        uintptr_t inplacedestructor;
+        uintptr_t initfunction;
+        Mem::PtrAsHash<Class<V>> parentClass;
+        size_t classSize;
+        size_t alignment;
+        bool isPropertyBase;
+        bool isInterface;
+        bool isValue;
+        bool isSecondaryBase;
+        bool isUnk5;
         Mem::StdVector<Property<V>> properties;
         Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryBases;
         Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryChildren;
@@ -350,6 +352,7 @@ namespace Meta {
             { "isInterface", v.isInterface },
             { "isValue", v.isValue },
             { "isSecondaryBase", v.isSecondaryBase },
+            { "isUnk5", v.isUnk5 },
             { "properties", *v.properties },
             { "secondaryBases", *v.secondaryBases },
             { "secondaryChildren", *v.secondaryChildren },
@@ -414,8 +417,10 @@ namespace Meta {
             meta = Dump<Patch::V5_21>(data);
         } else if (versionNumber < Patch::V7_15) {
             meta = Dump<Patch::V6_20>(data);
+        } else if (versionNumber < Patch::V10_11) {
+            meta = Dump<Patch::V7_15>(data);
         } else {
-            meta= Dump<Patch::V7_15>(data);
+            meta = Dump<Patch::V10_11>(data);
         }
         return {
             { "classes", meta },

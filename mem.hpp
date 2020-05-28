@@ -12,6 +12,10 @@ extern size_t GetSize() noexcept;
 extern int InvokeContainerI(uintptr_t fnptr) noexcept;
 extern int InvokeMapI(uintptr_t fnptr) noexcept;
 
+inline uintptr_t UnBase(uintptr_t ptr) noexcept {
+    return ptr ? ptr - GetBase() : 0;
+}
+
 namespace Mem {
     // Forward definitions
     template<typename T>

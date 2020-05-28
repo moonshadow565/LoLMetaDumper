@@ -305,7 +305,7 @@ namespace Meta {
     template<Patch V>
     inline void to_json(json& j, ContainerI<V> const& v) {
         j = {
-            { "vtable", v.vtable.ptr - GetBase() },
+            { "vtable", UnBase(v.vtable.ptr) },
             { "type", v.type },
             { "elemSize", v.elemSize },
             { "fixedSize", v.fixedSize() }
@@ -315,7 +315,7 @@ namespace Meta {
     template<Patch V>
     inline void to_json(json& j, MapI<V> const& v) {
         j = {
-            { "vtable", v.vtable.ptr - GetBase() },
+            { "vtable", UnBase(v.vtable.ptr) },
             { "key", v.key },
             { "value", v.value },
             { "storage", v.storage() }
@@ -338,13 +338,13 @@ namespace Meta {
     template<Patch V>
     inline void to_json(json& j, Class<V> const& v) {
         j = {
-            { "upcastSecondary", v.upcastSecondary - GetBase() },
+            { "upcastSecondary", UnBase(v.upcastSecondary) },
             { "hash", v.hash },
-            { "constructor", v.constructor - GetBase() },
-            { "destructor", v.destructor - GetBase() },
-            { "inplaceconstructor", v.inplaceconstructor - GetBase() },
-            { "inplacedestructor", v.inplacedestructor - GetBase() },
-            { "initfunction", v.initfunction - GetBase() },
+            { "constructor", UnBase(v.constructor) },
+            { "destructor", UnBase(v.destructor) },
+            { "inplaceconstructor", UnBase(v.inplaceconstructor) },
+            { "inplacedestructor", UnBase(v.inplacedestructor) },
+            { "initfunction", UnBase(v.initfunction) },
             { "parentClass", v.parentClass },
             { "classSize", v.classSize },
             { "alignment", v.alignment },

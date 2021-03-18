@@ -27,6 +27,9 @@ namespace Mem {
     template<typename T>
     struct StdVector;
 
+    template<typename T>
+    struct RiotVector;
+
     struct CString;
 
     struct StdString;
@@ -57,6 +60,21 @@ namespace Mem {
             std::vector<T> data = {};
             if(beg != end) {
                 data.resize((end - beg) / sizeof(T));
+                ReadMemory(beg, data.data(), data.size() * sizeof(T));
+            }
+            return data;
+        }
+    };
+
+    template<typename T>
+    struct RiotVector {
+        uintptr_t beg;
+        uintptr_t count;
+        uintptr_t capacity;
+        inline std::vector<T> operator*() const noexcept {
+            std::vector<T> data = {};
+            if(count) {
+                data.resize(count);
                 ReadMemory(beg, data.data(), data.size() * sizeof(T));
             }
             return data;

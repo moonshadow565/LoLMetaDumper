@@ -60,25 +60,26 @@ static void KillLeague() noexcept {
 }
 
 static void dump() noexcept {
+    std::ofstream log("metadumper.log.txt");
     try {
-        std::cout << "[MetaDumper] Started " << std::endl;
+        log << "[MetaDumper] Started " << std::endl;
         m_base = reinterpret_cast<uintptr_t>(GetModuleHandleA("League of Legends.exe"));
         m_size = 80 * 1024 * 1024;
 
-        std::cout << "[MetaDumper] Base " << (void*)m_base << std::endl;
+        log << "[MetaDumper] Base " << (void*)m_base << std::endl;
         if (m_base == 0) {
             return;
         }
 
         auto const pid = GetCurrentProcessId();
-        std::cout << "[MetaDumper] Pid " << pid << std::endl;
+        log << "[MetaDumper] Pid " << pid << std::endl;
         if (!OpenLeague(pid)) {
             return;
         }
 
         auto const data = Mem::Dump();
         auto const version = Version::Dump(data);
-        std::cout << "[MetaDumper] Version " << version << std::endl;
+        log << "[MetaDumper] Version " << version << std::endl;
 
         if (version.empty()) {
             KillLeague();
@@ -90,9 +91,9 @@ static void dump() noexcept {
             out << meta.dump(2);
             out.flush();
         }
-        std::cout << "[MetaDumper] Done" << std::endl;
+        log << "[MetaDumper] Done" << std::endl;
     } catch (std::exception const& e) {
-        std::cout << "[MetaDumper] Error " << e.what() << std::endl;
+        log << "[MetaDumper] Error " << e.what() << std::endl;
     }
     KillLeague();
 }

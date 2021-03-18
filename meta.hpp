@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include "mem.hpp"
 #include "patscanner.hpp"
 #include "version.hpp"
@@ -19,7 +20,11 @@ namespace Meta {
     struct MapI;
 
     template<Patch V>
-    using ClassList = Mem::Ptr<Mem::StdVector<Mem::Ptr<Class<V>>>>;
+    using ClassList =
+        std::conditional_t<(V < Patch::V11_6),
+                Mem::Ptr<Mem::StdVector<Mem::Ptr<Class<V>>>>,
+                Mem::Ptr<Mem::RiotVector<Mem::Ptr<Class<V>>>>
+                >;
 
     template<size_t SIZE>
     using Vtable = std::array<Mem::Ptr<std::array<uint8_t, 8>>, SIZE>;
@@ -300,6 +305,29 @@ namespace Meta {
         Mem::StdVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryChildren;
     };
 
+    template<>
+    struct Class<Patch::V11_6> {
+        static inline constexpr Patch V = Patch::V7_15;
+        uintptr_t upcastSecondary = {};
+        uint32_t hash;
+        uintptr_t constructor;
+        uintptr_t destructor;
+        uintptr_t inplaceconstructor;
+        uintptr_t inplacedestructor;
+        uintptr_t initfunction;
+        Mem::PtrAsHash<Class<V>> parentClass;
+        size_t classSize;
+        size_t alignment;
+        bool isPropertyBase;
+        bool isInterface;
+        bool isValue;
+        bool isSecondaryBase;
+        bool isUnk5;
+        Mem::RiotVector<Property<V>> properties;
+        Mem::RiotVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryBases;
+        Mem::RiotVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryChildren;
+    };
+
     // json serializers
 
     template<Patch V>
@@ -419,8 +447,10 @@ namespace Meta {
             meta = Dump<Patch::V6_20>(data);
         } else if (versionNumber < Patch::V10_11) {
             meta = Dump<Patch::V7_15>(data);
-        } else {
+        } else if (versionNumber < Patch::V11_6) {
             meta = Dump<Patch::V10_11>(data);
+        } else {
+            meta = Dump<Patch::V11_6>(data);
         }
         return {
             { "classes", meta },

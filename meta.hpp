@@ -166,6 +166,18 @@ namespace Meta {
         Mem::Ptr<ContainerI<V>> containerI;
         Mem::Ptr<MapI<V>> mapI = {};
     };
+
+    template<>
+    struct Property<Patch::V12_10> {
+        static inline constexpr Patch V = Patch::V12_10;
+        Mem::PtrAsHash<Class<V>> otherClass;
+        uint32_t hash;
+        int32_t offset;
+        uint8_t bitmask = {};
+        PropertyType type;
+        Mem::Ptr<ContainerI<V>> containerI;
+        Mem::Ptr<MapI<V>> mapI = {};
+    };
     
     template<>
     struct Class<Patch::V0> {
@@ -328,6 +340,30 @@ namespace Meta {
         Mem::RiotVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryChildren;
     };
 
+    template<>
+    struct Class<Patch::V12_10> {
+        static inline constexpr Patch V = Patch::V12_10;
+        uintptr_t upcastSecondary = {};
+        uint32_t hash;
+        uintptr_t constructor;
+        uintptr_t destructor;
+        uintptr_t inplaceconstructor;
+        uintptr_t inplacedestructor;
+        uintptr_t initfunction;
+        Mem::PtrAsHash<Class<V>> parentClass;
+        size_t classSize;
+        size_t alignment;
+        static inline constexpr bool isPropertyBase = false;
+        static inline constexpr bool isInterface = false;
+        bool isValue;
+        bool isSecondaryBase;
+        bool isUnk5;
+        Mem::RiotVector<Property<V>> properties;
+        Mem::RiotVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryBases;
+        Mem::RiotVector<std::pair<Mem::PtrAsHash<Class<V>>, uint32_t>> secondaryChildren;
+    };
+
+
     // json serializers
 
     template<Patch V>
@@ -377,7 +413,7 @@ namespace Meta {
             { "classSize", v.classSize },
             { "alignment", v.alignment },
             { "isPropertyBase", v.isPropertyBase },
-            { "isInterface", v.isInterface },
+            { "isInterface", v.isInterface || !v.constructor },
             { "isValue", v.isValue },
             { "isSecondaryBase", v.isSecondaryBase },
             { "isUnk5", v.isUnk5 },
@@ -449,8 +485,10 @@ namespace Meta {
             meta = Dump<Patch::V7_15>(data);
         } else if (versionNumber < Patch::V11_6) {
             meta = Dump<Patch::V10_11>(data);
-        } else {
+        } else if (versionNumber < Patch::V12_10) {
             meta = Dump<Patch::V11_6>(data);
+        } else {
+            meta = Dump<Patch::V12_10>(data);
         }
         return {
             { "classes", meta },
